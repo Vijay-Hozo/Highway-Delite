@@ -4,16 +4,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const VerifyOtp = () => {
+    const [email,setEmail] = useState("");
     const [otp, setOtp] = useState("");
-    const location = useLocation();
     const navigate = useNavigate();
-    const email = location.state?.email;
 
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/verify`, {
-                email,
+                email : email,
                 otp
             });
             toast.success(res.data.message);

@@ -3,8 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mailSender = require("../Middleware/MailSender");
 const otpGenerator = require("otp-generator");
-const OtpModel = require("../Models/OtpModel")
-// Register endpoint
+const RandomModel = require("../Models/RandomModel");
+
 const register = async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
   try {
@@ -40,14 +40,23 @@ const register = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+    const otpEntry = new RandomModel({
+      email ,
+      otp,
+      createdAt: new Date(),
+    });
 
-    let result = await OtpModel.findOne({ otp });
+    console.log("Saving OTP entry:", otpEntry);
+
+    await otpEntry.save();
+
+    let result = await RandomModel.findOne({ otp });
 
     while (result) {
       otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
       });
-      result = await OtpModel.findOne({ otp });
+      result = await RandomModel.findOne({ otp });
     }
 
     const emailBody = `
@@ -72,7 +81,6 @@ const register = async (req, res) => {
       <p style="font-size: 12px; color: #777;">This email was sent to you by Highway Deliter. If you did not sign up for our services, please disregard this email.</p>
     </div>
   `;
-  
     await user.save();
     await mailSender(email, "Your OTP Code", emailBody);
     res.status(200).json({
@@ -80,6 +88,7 @@ const register = async (req, res) => {
       message: "Please enter the OTP sent to your email.",
     });
   } catch (err) {
+    console.error("Error in register function:", err); 
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -88,7 +97,7 @@ const register = async (req, res) => {
 const verifyuser = async (req, res) => {
   const { otp, email } = req.body;
   try {
-    const otpEntry = await OtpModel.findOne({ email }).sort({ createdAt: -1 });
+    const otpEntry = await RandomModel.findOne({ email }).sort({ createdAt: -1 });
     
     if (!otp || !otpEntry) {
       return res.status(400).json({
@@ -104,12 +113,12 @@ const verifyuser = async (req, res) => {
       });
     }
 
-    await OtpModel.deleteMany({ email });
+    await RandomModel.deleteMany({ email });
 
     const user = await UserModel.findOne({ email });
 
     if (user) {
-      const token = jwt.sign({ id: user._id }, "secret_key", {
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "8h",
       });
 
@@ -128,7 +137,6 @@ const verifyuser = async (req, res) => {
     res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
-
 
 //Login a user
 const login = async (req, res) => {
@@ -196,17 +204,17 @@ const forgotpassword = async (req, res) => {
       specialChars: false,
     });
 
-    let result = await OtpModel.findOne({ otp });
+    let result = await RandomModel.findOne({ otp });
 
     while (result) {
       otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
       });
-      result = await OtpModel.findOne({ otp });
+      result = await RandomModel.findOne({ otp });
     }
 
     const otppayload = { email, otp };
-    const otpbody = await OtpModel.create(otppayload);
+    const otpbody = await RandomModel.create(otppayload);
 
     const emailBody = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -252,7 +260,7 @@ const resetpassword = async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    const otpEntry = await OtpModel.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+    const otpEntry = await RandomModel.findOne({ email }).sort({ createdAt: -1 }).limit(1);
 
     if (!otp || !otpEntry) {
       return res.status(400).json({ message: "Please enter the OTP" });
@@ -264,7 +272,7 @@ const resetpassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await UserModel.findOneAndUpdate({ email }, { password: hashedPassword });
-    await OtpModel.deleteMany({ email });
+    await RandomModel.deleteMany({ email });
 
     res.status(200).json({status:"success", message: "Password reset successfully" });
   } catch (error) {

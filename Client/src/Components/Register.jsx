@@ -88,8 +88,8 @@ const Register = () => {
             password: password
         })
         dispatch(login(res.data.user));
-        toast.success("Mail Sent Successfully");
-        navigate("/verify",{state: {email: email}});
+        toast.success("User registered Successfully");
+        navigate("/home");
     }
     catch(err){
         console.log(err);
