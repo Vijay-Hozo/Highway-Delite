@@ -52,9 +52,6 @@ const register = async (req, res) => {
       result = await OtpModel.findOne({ otp });
     }
 
-    const otppayload = { email, otp };
-    const otpbody = await OtpModel.create(otppayload);
-
     const emailBody = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <h2 style="color: #28a745;">Welcome to Highway Deliter!</h2>
@@ -78,24 +75,23 @@ const register = async (req, res) => {
     </div>
   `;
   
-
+    await user.save();
     await mailSender(email, "Your OTP Code", emailBody);
     res.status(200).json({
       status: "success",
-      message: "User registered successfully. Please enter the OTP sent to your email.",
-      otpbody
+      message: "Please enter the OTP sent to your email.",
     });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
 // Verify OTP endpoint
 const verifyuser = async (req, res) => {
-  const { email, otp } = req.body;
+  const { otp, email } = req.body;
   try {
     const otpEntry = await OtpModel.findOne({ email }).sort({ createdAt: -1 });
+    
     if (!otp || !otpEntry) {
       return res.status(400).json({
         status: "failure",
@@ -111,20 +107,26 @@ const verifyuser = async (req, res) => {
     }
 
     await OtpModel.deleteMany({ email });
+
     const user = await UserModel.findOne({ email });
+
     if (user) {
-      res.status(200).json({
+      const token = jwt.sign({ id: user._id }, "secret_key", {
+        expiresIn: "8h",
+      });
+
+      return res.status(200).json({
         status: "success",
         message: "OTP verified successfully. Your registration is complete.",
+        token,  
       });
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         status: "failure",
         message: "User not found",
       });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
@@ -149,8 +151,8 @@ const login = async (req, res) => {
         .json({ status: "failure", message: "Password is not valid" });
     }
 
-    const token = jwt.sign({ id: user._id }, "secret_key", {
-      expiresIn: "8h",
+  const token = jwt.sign({ id: user._id }, "secret_key", {
+      expiresIn: "8h",  
     });
     res.status(200).json({
       status: "success",
@@ -159,7 +161,6 @@ const login = async (req, res) => {
       user,
     });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
@@ -176,7 +177,6 @@ const getuser = async (req, res) => {
     }
     res.status(200).json({ status: "success", message: "User found", user });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
@@ -247,27 +247,30 @@ const forgotpassword = async (req, res) => {
 
 //reset password
 const resetpassword = async (req, res) => {
-  try{
+  try {
     const { email, otp, password } = req.body;
-    const user = await UserModel.findOne({email});
-    const otpEntry = await OtpModel.find().sort({createdAt: -1}).limit(1);
-    if(!user){
-      return res.status(400).json({message: "User not found"});
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
-    if(!otp || !otpEntry){
-      return res.status(400).json({message: "Please enter the OTP"});
+
+    const otpEntry = await OtpModel.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+
+    if (!otp || !otpEntry) {
+      return res.status(400).json({ message: "Please enter the OTP" });
     }
-    if(otp !== otpEntry.otp){
-      return res.status(400).json({message: "The OTP is not valid"});
+    if (otp !== otpEntry.otp) {
+      return res.status(400).json({ message: "The OTP is not valid" });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    await UserModel.findOneAndUpdate({email}, {password: hashedPassword});
-    await otpEntry.deleteOne();
-    res.status(200).json({message: "Password reset successfully"});
+
+    await UserModel.findOneAndUpdate({ email }, { password: hashedPassword });
+    await OtpModel.deleteMany({ email });
+
+    res.status(200).json({status:"success", message: "Password reset successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({status:"failure", message: "Server error" });
   }
 };
 

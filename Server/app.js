@@ -9,8 +9,9 @@ const UserRoute = require('./Routes/UserRoute');
 app.use(cors());
 app.use(bodyParser.json());
 
+
 mongoose.connect(
-    "mongodb+srv://vijay2304a:1234@cluster0.8euax.mongodb.net/user?retryWrites=true&w=majority&appName=Cluster0"
+    process.env.MONGODB_URL
 ).then(() => {
     console.log('Connected to database!');
 }).catch(() => {
@@ -19,6 +20,6 @@ mongoose.connect(
 
 app.use("/",UserRoute);
 
-app.listen(5000,()=>{
-    console.log("Server is running on port 5000")
+app.listen(8000,()=>{
+    console.log("Server is running on port 8000")
 })
