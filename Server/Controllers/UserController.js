@@ -1,11 +1,9 @@
-const UserModel = require("../Models/UserModel");
+const UserModel = require('../Models/UserModel')
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mailSender = require("../Middleware/MailSender");
-const crypto = require("crypto");
 const otpGenerator = require("otp-generator");
-const OtpModel = require("../Models/OTPModel");
-
+const OtpModel = require("../Models/OtpModel")
 // Register endpoint
 const register = async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
