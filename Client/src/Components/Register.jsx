@@ -81,14 +81,13 @@ const Register = () => {
   const handleRegister = async(e) => {
     e.preventDefault();
     try{
-        const res = await axios.post("http://localhost:5000/register",{
+        const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/register`,{
             first_name: firstname,
             last_name: lastname,
             email: email,
             password: password
         })
         dispatch(login(res.data.user));
-        localStorage.setItem("token", res.data.token);
         toast.success("Mail Sent Successfully");
         navigate("/verify",{state: {email: email}});
     }
@@ -99,68 +98,69 @@ const Register = () => {
   }
 
   return (
-    <div className="flex items-center justify-around w-full min-h-screen p-10 bg-gray-100">
-      <div className="w-1/2 flex justify-center">
-        <img
-          src={signup}
-          alt="Sign Up"
-          className="w-full h-auto max-w-lg min-w-0 hidden md:block"
-        />
-      </div>
-      <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg min-w-0 sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 mr-20">
-        <div className="flex justify-between">
-          <div className="font-bold text-3xl mb-8">
-            <span className="text-purple">Let Us Know</span>
-            <span className="text-red">!</span>
-          </div>
-          <div className="text-xl font-semibold">
-            <span>
-              <Link to="/login" className="text-purple">
-                Sign
-              </Link>
-            </span>
-            <a href="/login" className="text-red">
-              In
-            </a>
-          </div>
-        </div>
-        <form className="flex flex-col space-y-6" onSubmit={handleRegister}>
-          <input
-            type="text"
-            placeholder="First Name"
-            className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
-            value={firstname}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
-            value={lastname}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-          <PasswordInput
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {/* <PasswordInput /> */}
-          <input
-            type="email"
-            placeholder="Enter Email"
-            className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            className="bg-purple hover:bg-purple-700 text-white py-3 rounded-lg transition-all duration-300 shadow-lg"
-          >
-            Sign Up
-          </button>
-        </form>
-      </div>
+    <div className="flex flex-col md:flex-row items-center justify-center w-full min-h-screen p-10 bg-gray">
+    <div className="w-full md:w-1/2 flex justify-center">
+      <img
+        src={signup}
+        alt="Sign Up"
+        className="hidden md:block w-full h-auto max-w-lg min-w-0"
+      />
     </div>
+    <div className="w-full md:w-1/2 bg-white p-8 shadow-lg rounded-lg min-w-0 sm:w-full md:max-w-md lg:w-2/3 xl:w-1/2">
+      <div className="flex justify-between">
+        <div className="font-bold text-3xl mb-8">
+          <span className="text-purple">Let Us Know</span>
+          <span className="text-red">!</span>
+        </div>
+        <div className="text-xl font-semibold">
+          <span>
+            <Link to="/login" className="text-purple">
+              Sign
+            </Link>
+          </span>
+          <a href="/login" className="text-red">
+            In
+          </a>
+        </div>
+      </div>
+      <form className="flex flex-col space-y-6" onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="First Name"
+          className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
+          value={firstname}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Last Name"
+          className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
+          value={lastname}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+        
+        <input
+          type="email"
+          placeholder="Enter Email"
+          className="border-b-2 border-gray focus:outline-none py-2 focus:border-purple"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+  
+        <PasswordInput
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="bg-purple hover:bg-red text-white py-3 rounded-lg transition-all duration-300 shadow-lg"
+        >
+          Sign Up
+        </button>
+      </form>
+    </div>
+  </div>
+  
   );
 };
 

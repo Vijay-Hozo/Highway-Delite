@@ -12,12 +12,13 @@ const VerifyOtp = () => {
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:5000/verify", {
+            const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/verify`, {
                 email,
                 otp
             });
             toast.success(res.data.message);
             navigate("/home"); 
+            localStorage.setItem("token", res.data.token);
         } catch (err) {
             console.log(err);
             toast.error(err.response.data.message);
@@ -25,7 +26,7 @@ const VerifyOtp = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-10">
+        <div className="flex items-center justify-center min-h-screen p-10">
             <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
                 <h2 className="text-2xl font-bold mb-4">Verify OTP</h2>
                 <form onSubmit={handleVerifyOtp} className="flex flex-col space-y-4">

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { login } from "../Redux/createSlice";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const PasswordInput = ({ value, onChange }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -79,23 +80,21 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/login", {
+      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/login`, {
         email: email,
         password: password,
       });
-      console.log(res.data);
       dispatch(login(res.data.user));
       localStorage.setItem("token", res.data.token);
       navigate("/home");
       toast.success("Login Success");
     } catch (err) {
-      console.log(err);
       toast.error(err.response.data.message);
     }
   };
 
   return (
-    <div className="flex items-center justify-around w-full min-h-screen p-10 bg-bgWhite">
+    <div className="flex flex-col md:flex-row items-center justify-around w-full min-h-screen p-10 bg-bgWhite">
       <div className="w-1/2 flex justify-center">
         <img
           src={signin}
@@ -103,7 +102,7 @@ const Login = () => {
           className="w-full h-auto max-w-lg md:max-w-full md:h-[600px] object-cover hidden md:block"
         />
       </div>
-      <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg min-w-0 sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 mr-20">
+      <div className="w-full bg-white p-8 shadow-lg rounded-lg min-w-0 sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3">
         <div className="flex justify-between">
           <div className="font-bold text-2xl mb-8">
             <span className="text-purple">Fill What We Know</span>
@@ -122,17 +121,15 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-
           <button
             type="submit"
             className="bg-purple hover:bg-red text-white py-3 rounded-lg transition-all duration-300 shadow-lg"
           >
             Sign In
           </button>
-
-          <button className="bg-white hover:bg-red text-black py-3 rounded-lg transition-all duration-300 shadow-lg">
+          <Link to="/"><button className="w-full bg-red hover:bg-purple text-black py-3 rounded-lg transition-all duration-300 shadow-lg">
             Sign Up
-          </button>
+          </button></Link>
         </form>
       </div>
     </div>
