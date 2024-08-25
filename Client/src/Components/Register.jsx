@@ -118,9 +118,9 @@ const Register = () => {
               Sign
             </Link>
           </span>
-          <a href="/login" className="text-red">
+          <Link to="/login" className="text-red">
             In
-          </a>
+          </Link>
         </div>
       </div>
       <form className="flex flex-col space-y-6" onSubmit={handleRegister}>
