@@ -5,6 +5,7 @@ const mailSender = require("../Middleware/MailSender");
 const otpGenerator = require("otp-generator");
 const RandomModel = require("../Models/RandomModel");
 
+
 const register = async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
   try {
@@ -39,65 +40,69 @@ const register = async (req, res) => {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
+      digits: true,
     });
-    const otpEntry = new RandomModel({
-      email ,
-      otp,
-      createdAt: new Date(),
-    });
-
-    console.log("Saving OTP entry:", otpEntry);
-
-    await otpEntry.save();
-
+    console.log("OTP:", otp);
+  
     let result = await RandomModel.findOne({ otp });
-
+    console.log("Result:", result);
+    
     while (result) {
       otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
       });
+      
       result = await RandomModel.findOne({ otp });
     }
 
+    const otppayload = { email, otp };
+    const otpbody = await RandomModel.create(otppayload);
+
     const emailBody = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-      <h2 style="color: #28a745;">Welcome to Highway Deliter!</h2>
+     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <h2 style="color: #28a745;">Password Reset Request</h2>
       <p>Dear User,</p>
   
-      <p>We’re thrilled to have you join the Highway Deliter community. To complete your registration, please use the OTP below to verify your email address:</p>
+      <p>Welcome to Highway Deliter account. To complete this process, please use the OTP below:</p>
   
       <p style="font-size: 20px; color: #28a745;"><strong>${otp}</strong></p>
   
-      <p>This OTP is valid for the next 10 minutes. Please enter it in the required field to complete your verification process.</p>
+      <p>This link is valid for the next 10 minutes. If the link expires or you need to reset your password again, please request a new reset.</p>
   
-      <p>If you did not request this verification, please ignore this email or contact our support team for assistance.</p>
+      <p> please ignore this email or contact our support team for assistance.</p>
   
-      <p>Thank you for choosing Highway Deliter. We’re excited to have you on board and look forward to helping you with your MERN stack needs.</p>
+      <p>Thank you for being a part of Highway Deliter. We’re here to support you with all your MERN stack needs.</p>
   
       <p style="font-weight: bold;">Best regards,<br>The Highway Deliter Team</p>
   
       <hr style="border: none; border-top: 1px solid #ccc;" />
   
-      <p style="font-size: 12px; color: #777;">This email was sent to you by Highway Deliter. If you did not sign up for our services, please disregard this email.</p>
+      <p style="font-size: 12px; color: #777;">This email was sent to you by Highway Deliter. If you did not request a password reset, please disregard this email.</p>
     </div>
   `;
+  
     await user.save();
     await mailSender(email, "Your OTP Code", emailBody);
     res.status(200).json({
       status: "success",
       message: "Please enter the OTP sent to your email.",
+      otpbody,
     });
   } catch (err) {
-    console.error("Error in register function:", err); 
+    console.error("Error in register function:", err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
+
 // Verify OTP endpoint
 const verifyuser = async (req, res) => {
   const { otp, email } = req.body;
+  console.log(otp,email);
+  
   try {
-    const otpEntry = await RandomModel.findOne({ email }).sort({ createdAt: -1 });
+    const otpEntry = await RandomModel.findOne().sort({ createdAt: -1 })
+    console.log("OTP entry:", otpEntry);
     
     if (!otp || !otpEntry) {
       return res.status(400).json({
@@ -106,26 +111,34 @@ const verifyuser = async (req, res) => {
       });
     }
 
-    if (otp !== otpEntry.otp) {
+    if (otp != otpEntry.otp) { // using loose equality to avoid potential type mismatch issues
       return res.status(400).json({
         status: "failure",
         message: "The OTP is not valid",
       });
     }
 
-    await RandomModel.deleteMany({ email });
+    // await RandomModel.deleteMany({ email });
 
     const user = await UserModel.findOne({ email });
-
+    
     if (user) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "8h",
-      });
+      let token;
+      try {
+        token = jwt.sign({ id: user._id }, "secret_key", {
+          expiresIn: "8h",
+        });
+      } catch (err) {
+        return res.status(500).json({
+          status: "failure",
+          message: "Error generating token",
+        });
+      }
 
       return res.status(200).json({
         status: "success",
         message: "OTP verified successfully. Your registration is complete.",
-        token,  
+        token,
       });
     } else {
       return res.status(404).json({
@@ -134,9 +147,11 @@ const verifyuser = async (req, res) => {
       });
     }
   } catch (err) {
+    console.error("Error in verifyuser function:", err);
     res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
+
 
 //Login a user
 const login = async (req, res) => {

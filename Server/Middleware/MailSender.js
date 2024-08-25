@@ -8,12 +8,12 @@ const mailSender = async (email, title, text) => {
             port: 465,
             host: "smtp.gmail.com",
             auth: {
-                user: process.env.USER_EMAIL,
-                pass: process.env.USER_PASSWORD
+                user: "vijay2304a@gmail.com",
+                pass: "kpcb nlpj oblk rcdb"
             }
         })
         const mailOptions = {
-            from: process.env.USER_EMAIL,
+            from: "vijay2304a@gmail.com",
             to: email,
             subject: title,
             html: text
