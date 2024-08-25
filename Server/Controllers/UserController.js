@@ -5,7 +5,7 @@ const mailSender = require("../Middleware/MailSender");
 const otpGenerator = require("otp-generator");
 const RandomModel = require("../Models/RandomModel");
 
-
+//Register
 const register = async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
   try {
@@ -111,7 +111,7 @@ const verifyuser = async (req, res) => {
       });
     }
 
-    if (otp != otpEntry.otp) { // using loose equality to avoid potential type mismatch issues
+    if (otp != otpEntry.otp) {
       return res.status(400).json({
         status: "failure",
         message: "The OTP is not valid",
