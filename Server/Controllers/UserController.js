@@ -101,7 +101,7 @@ const verifyuser = async (req, res) => {
   console.log(otp,email);
   
   try {
-    const otpEntry = await RandomModel.findOne().sort({ createdAt: -1 })
+    const otpEntry = await RandomModel.findOne({email}).sort({ createdAt: -1 })
     console.log("OTP entry:", otpEntry);
     
     if (!otp || !otpEntry) {
@@ -118,7 +118,7 @@ const verifyuser = async (req, res) => {
       });
     }
 
-    // await RandomModel.deleteMany({ email });
+    await RandomModel.deleteMany({ email });
 
     const user = await UserModel.findOne({ email });
     
