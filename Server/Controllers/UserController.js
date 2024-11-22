@@ -7,7 +7,7 @@ const RandomModel = require("../Models/RandomModel");
 
 //Register
 const register = async (req, res) => {
-  const { first_name, last_name, email, password } = req.body;
+  const { first_name, last_name, email, password,role } = req.body;
   try {
     let user = await UserModel.findOne({ email });
     if (user) {
@@ -34,6 +34,7 @@ const register = async (req, res) => {
       last_name,
       email,
       password,
+      role
     });
 
     let otp = otpGenerator.generate(6, {
@@ -172,7 +173,7 @@ const login = async (req, res) => {
         .json({ status: "failure", message: "Password is not valid" });
     }
 
-  const token = jwt.sign({ id: user._id }, "secret_key", {
+  const token = jwt.sign({ id: user._id, role:user.role }, "secret_key", {
       expiresIn: "8h",  
     });
     res.status(200).json({

@@ -5,6 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const UserRoute = require('./Routes/UserRoute');
+const WasteRoute = require('./Routes/WasteRoute');
+const RoleRoute = require('./Routes/RoleRoute');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -19,6 +21,8 @@ mongoose.connect(
 });
 
 app.use("/",UserRoute);
+app.use("/",WasteRoute);
+app.use("/",RoleRoute);
 
 app.listen(8000,()=>{
     console.log("Server is running on port 8000")
