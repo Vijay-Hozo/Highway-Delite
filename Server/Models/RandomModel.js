@@ -18,30 +18,6 @@ const otpSchema = new mongoose.Schema({
     },
 })
 
-// async function sendVerificationEmail(email,otp) {
-//     try{
-//         const mailResponse = await mailSender(
-//             email,
-//             "OTP for verification",
-//             `<p>Welcome to HopOn! We're excited to have you join our community.</p>,
-//             <h1>Please Confirm Your OTP </h1>
-//             <h1>Your OTP for verification is ${otp}</h1>
-//             <p>Thank you for choosing us,
-//             </p>`
-//         )
-//     }
-//     catch(err){
-//         console.log(err)
-//     }
-// }
-
-// otpSchema.pre("save", async function(next) {
-//     if(this.isNew){
-//         await sendVerificationEmail(this.email,this.otp)
-//     }
-//     next();
-// })
-
 const RandomModel = mongoose.model("Random",otpSchema);
 
 module.exports = RandomModel;
